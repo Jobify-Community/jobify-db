@@ -49,9 +49,9 @@ motor = ["motor>=3.6"]
 aiomysql = ["aiomysql>=0.2"]
 
 [project.urls]
-Source = "https://github.com/C3EQUALZz/jobify-db"
-Homepage = "https://github.com/C3EQUALZz/jobify-db"
-Tracker = "https://github.com/C3EQUALZz/jobify-db/issues"
+Source = "https://github.com/Jobify-Community/jobify-db"
+Homepage = "https://github.com/Jobify-Community/jobify-db"
+Tracker = "https://github.com/Jobify-Community/jobify-db/issues"
 
 [dependency-groups]
 dev = [
