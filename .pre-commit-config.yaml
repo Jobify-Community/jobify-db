@@ -28,7 +28,7 @@ repos:
     rev: v1.5.0
     hooks:
     -   id: detect-secrets
-        args: ['--exclude-files', '^(examples/|README\.md)']
+        args: ['--exclude-files', '^(examples/|tests/|README\.md)']
 
 -   repo: local
     hooks:
