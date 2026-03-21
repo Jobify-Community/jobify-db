@@ -39,7 +39,7 @@ classifiers = [
 requires-python = ">=3.10"
 
 dependencies = [
-    "jobify>=0.3.3",
+    "jobify>=0.7.1",
 ]
 
 [project.optional-dependencies]
