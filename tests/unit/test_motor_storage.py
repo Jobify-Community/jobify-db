@@ -1,9 +1,10 @@
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from jobify_db import StorageConfigurationError, StorageNotInitializedError
 from jobify_db.mongodb.motor import MotorStorage
+from tests.factories import make_motor_mock_client
 
 
 class TestMotorStorageInit:
@@ -26,11 +27,7 @@ class TestMotorStorageInit:
 class TestMotorStorageStartup:
     @pytest.mark.asyncio()
     async def test_startup_creates_client_from_uri(self) -> None:
-        mock_collection = AsyncMock()
-        mock_db = MagicMock()
-        mock_db.__getitem__ = MagicMock(return_value=mock_collection)
-        mock_client = MagicMock()
-        mock_client.__getitem__ = MagicMock(return_value=mock_db)
+        mock_client, _, mock_collection = make_motor_mock_client()
 
         storage = MotorStorage(uri="mongodb://localhost:27017")
 
@@ -45,11 +42,7 @@ class TestMotorStorageStartup:
 
     @pytest.mark.asyncio()
     async def test_startup_uses_existing_client(self) -> None:
-        mock_collection = AsyncMock()
-        mock_db = MagicMock()
-        mock_db.__getitem__ = MagicMock(return_value=mock_collection)
-        mock_client = MagicMock()
-        mock_client.__getitem__ = MagicMock(return_value=mock_db)
+        mock_client, _, mock_collection = make_motor_mock_client()
 
         storage = MotorStorage(client=mock_client)
 
@@ -65,11 +58,7 @@ class TestMotorStorageStartup:
 class TestMotorStorageShutdown:
     @pytest.mark.asyncio()
     async def test_shutdown_closes_owned_client(self) -> None:
-        mock_collection = AsyncMock()
-        mock_db = MagicMock()
-        mock_db.__getitem__ = MagicMock(return_value=mock_collection)
-        mock_client = MagicMock()
-        mock_client.__getitem__ = MagicMock(return_value=mock_db)
+        mock_client, _, _ = make_motor_mock_client()
 
         storage = MotorStorage(uri="mongodb://localhost:27017")
 
@@ -87,11 +76,7 @@ class TestMotorStorageShutdown:
 
     @pytest.mark.asyncio()
     async def test_shutdown_does_not_close_external_client(self) -> None:
-        mock_collection = AsyncMock()
-        mock_db = MagicMock()
-        mock_db.__getitem__ = MagicMock(return_value=mock_collection)
-        mock_client = MagicMock()
-        mock_client.__getitem__ = MagicMock(return_value=mock_db)
+        mock_client, _, _ = make_motor_mock_client()
 
         storage = MotorStorage(client=mock_client)
         await storage.startup()
@@ -108,11 +93,7 @@ class TestMotorStorageShutdown:
 class TestMotorStorageDeleteScheduleMany:
     @pytest.mark.asyncio()
     async def test_delete_many_noop_for_empty_list(self) -> None:
-        mock_collection = AsyncMock()
-        mock_db = MagicMock()
-        mock_db.__getitem__ = MagicMock(return_value=mock_collection)
-        mock_client = MagicMock()
-        mock_client.__getitem__ = MagicMock(return_value=mock_db)
+        mock_client, _, mock_collection = make_motor_mock_client()
 
         storage = MotorStorage(client=mock_client)
         await storage.startup()

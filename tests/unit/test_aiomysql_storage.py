@@ -4,22 +4,7 @@ import pytest
 
 from jobify_db import StorageConfigurationError, StorageNotInitializedError
 from jobify_db.mysql.aiomysql import AiomysqlStorage
-
-
-def _make_mock_pool() -> MagicMock:
-    mock_cursor = AsyncMock()
-
-    mock_conn = MagicMock()
-    mock_conn.cursor.return_value.__aenter__ = AsyncMock(return_value=mock_cursor)
-    mock_conn.cursor.return_value.__aexit__ = AsyncMock(return_value=False)
-    mock_conn.commit = AsyncMock()
-
-    mock_pool = MagicMock()
-    mock_pool.acquire.return_value.__aenter__ = AsyncMock(return_value=mock_conn)
-    mock_pool.acquire.return_value.__aexit__ = AsyncMock(return_value=False)
-    mock_pool.close = MagicMock()
-    mock_pool.wait_closed = AsyncMock()
-    return mock_pool
+from tests.factories import make_aiomysql_mock_pool
 
 
 class TestAiomysqlStorageInit:
@@ -52,7 +37,7 @@ class TestAiomysqlStoragePool:
 class TestAiomysqlStorageStartup:
     @pytest.mark.asyncio()
     async def test_startup_creates_pool_from_host(self) -> None:
-        mock_pool = _make_mock_pool()
+        mock_pool = make_aiomysql_mock_pool()
         storage = AiomysqlStorage(
             host="localhost", user="root", password="pass", db="testdb"
         )
@@ -69,7 +54,7 @@ class TestAiomysqlStorageStartup:
     async def test_startup_skips_pool_creation_when_pool_provided(
         self,
     ) -> None:
-        mock_pool = _make_mock_pool()
+        mock_pool = make_aiomysql_mock_pool()
         storage = AiomysqlStorage(pool=mock_pool)
 
         with patch(
@@ -83,7 +68,7 @@ class TestAiomysqlStorageStartup:
 class TestAiomysqlStorageShutdown:
     @pytest.mark.asyncio()
     async def test_shutdown_closes_owned_pool(self) -> None:
-        mock_pool = _make_mock_pool()
+        mock_pool = make_aiomysql_mock_pool()
         storage = AiomysqlStorage(host="localhost")
 
         with patch(

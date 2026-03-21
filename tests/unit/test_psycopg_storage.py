@@ -4,6 +4,7 @@ import pytest
 
 from jobify_db import StorageConfigurationError, StorageNotInitializedError
 from jobify_db.postgresql.psycopg import PsycopgStorage
+from tests.factories import make_psycopg_mock_pool
 
 
 class TestPsycopgStorageInit:
@@ -38,16 +39,7 @@ class TestPsycopgStoragePool:
 class TestPsycopgStorageShutdown:
     @pytest.mark.asyncio()
     async def test_shutdown_closes_owned_pool(self) -> None:
-        mock_conn = AsyncMock()
-        mock_cm = AsyncMock()
-        mock_cm.__aenter__.return_value = mock_conn
-
-        mock_pool = MagicMock()
-        mock_pool.closed = False
-        mock_pool.connection.return_value = mock_cm
-        mock_pool.open = AsyncMock()
-        mock_pool.close = AsyncMock()
-
+        mock_pool = make_psycopg_mock_pool()
         storage = PsycopgStorage(conninfo="postgresql://localhost/test")
 
         with patch(
