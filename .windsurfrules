@@ -1,0 +1,27 @@
+You are working on **jobify-db**, a Python library providing database storage backends for the Jobify scheduling framework.
+
+## Critical rules
+
+- Python 3.10+. NEVER use `from __future__ import annotations`.
+- No lazy `__getattr__` imports. Public API uses explicit re-exports in subpackages.
+- All code is async. No sync wrappers.
+- Strict mypy (`mypy.ini`) and ruff (`ruff.toml`). Configs are separate files, NOT in pyproject.toml.
+- Pool/client ownership: if user passes external pool/client, do NOT close it on shutdown.
+
+## Commands
+
+- `just lint` — ruff format + check + codespell
+- `just mypy` — type checking
+- `uv run --active --frozen pytest tests/unit/` — fast tests (no Docker)
+- `uv run --active --frozen pytest tests/` — all tests (Docker required)
+
+## Structure
+
+- `src/jobify_db/_internal/` — private implementations
+- `src/jobify_db/{db}/{driver}.py` — public re-exports
+- `tests/factories.py` — shared test helpers (make_job, mock factories)
+- `tests/integration/test_storage.py` — parametrized across all backends
+
+## Storage protocol
+
+Each storage implements: `startup()`, `shutdown()`, `get_schedules()`, `add_schedule()`, `delete_schedule()`, `delete_schedule_many()`.
