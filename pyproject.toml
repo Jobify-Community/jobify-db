@@ -9,12 +9,12 @@ build-backend = "hatchling.build"
 source = "vcs"
 
 [tool.hatch.build.hooks.vcs]
-version-file = "src/dishka_jobify/_version.py"
+version-file = "src/jobify_db/_version.py"
 
 [project]
-name = "dishka-jobify"
+name = "jobify-db"
 dynamic = ["version"]
-description = "Integration package for Dishka DI and Jobify framework"
+description = "Database storage backends for the Jobify framework"
 readme = "README.md"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
@@ -39,9 +39,12 @@ classifiers = [
 requires-python = ">=3.10"
 
 dependencies = [
-    "dishka>=1.7,<2",
     "jobify>=0.3.3",
 ]
+
+[project.optional-dependencies]
+asyncpg = ["asyncpg>=0.30"]
+psycopg = ["psycopg[binary]>=3.2"]
 
 [project.urls]
 Source = "https://github.com/C3EQUALZz/jobify-db"
