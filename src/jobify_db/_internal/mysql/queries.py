@@ -1,0 +1,16 @@
+CREATE_SCHEDULED_TABLE_QUERY = """
+CREATE TABLE IF NOT EXISTS {table_name} (
+    job_id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    message BLOB NOT NULL,
+    status VARCHAR(50) NOT NULL,
+    next_run_at DATETIME NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+"""
+
+SELECT_SCHEDULES_QUERY = """
+SELECT job_id, name, message, status, next_run_at
+FROM {table_name};
+"""

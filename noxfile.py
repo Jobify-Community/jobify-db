@@ -35,7 +35,7 @@ def tests(
     dev_deps = load_test_dependencies()
     session.install(*dev_deps)
 
-    session.install("-e", ".[asyncpg,psycopg,motor]")
+    session.install("-e", ".[asyncpg,psycopg,motor,aiomysql]")
 
     session.run(
         "pytest",

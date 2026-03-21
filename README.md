@@ -8,6 +8,7 @@
 
 * **PostgreSQL** support via `asyncpg` and `psycopg` drivers
 * **MongoDB** support via `motor` driver
+* **MySQL** support via `aiomysql` driver
 * Accepts either a connection string or an externally managed pool/client
 * Automatic table/collection creation on startup
 
@@ -19,6 +20,7 @@ Install with the driver you need:
 pip install jobify-db[asyncpg]
 pip install jobify-db[psycopg]
 pip install jobify-db[motor]
+pip install jobify-db[aiomysql]
 ```
 
 Or with `uv`:
@@ -27,6 +29,7 @@ Or with `uv`:
 uv add "jobify-db[asyncpg]"
 uv add "jobify-db[psycopg]"
 uv add "jobify-db[motor]"
+uv add "jobify-db[aiomysql]"
 ```
 
 ## How to use
@@ -120,6 +123,40 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
+### MySQL with aiomysql
+
+```python
+import asyncio
+
+from jobify import Jobify
+
+from jobify_db.mysql.aiomysql import AiomysqlStorage
+
+app = Jobify(
+    storage=AiomysqlStorage(
+        host="localhost",
+        port=3306,
+        user="root",
+        password="password",
+        db="mydb",
+    ),
+)
+
+
+@app.task(cron="*/10 * * * *")
+async def sync_data() -> None:
+    print("Syncing data every 10 minutes")
+
+
+async def main() -> None:
+    async with app:
+        await app.wait_all()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
 ### Using an external pool/client
 
 You can pass an externally managed pool or client instead of a connection string. This is useful when you want to share the pool across multiple components.
@@ -152,4 +189,4 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-The same pattern works for `PsycopgStorage(pool=pool)` and `MotorStorage(client=client)`.
+The same pattern works for `PsycopgStorage(pool=pool)`, `MotorStorage(client=client)`, and `AiomysqlStorage(pool=pool)`.
