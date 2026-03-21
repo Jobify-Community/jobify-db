@@ -44,7 +44,8 @@ dependencies = [
 
 [project.optional-dependencies]
 asyncpg = ["asyncpg>=0.30"]
-psycopg = ["psycopg[binary]>=3.2"]
+psycopg = ["psycopg[binary]>=3.2", "psycopg_pool>=3.2"]
+motor = ["motor>=3.6"]
 
 [project.urls]
 Source = "https://github.com/C3EQUALZz/jobify-db"
@@ -70,6 +71,7 @@ test = [
     "pytest>=8.4.2",
     "pytest-asyncio>=1.2.0",
     "pytest-cov>=7.0.0",
+    "testcontainers[postgres]>=4.10",
 ]
 
 [tool.mypy]

@@ -2,46 +2,49 @@ from collections.abc import Sequence
 from typing import Final
 from zoneinfo import ZoneInfo
 
-import asyncpg
 from jobify._internal.common.constants import JobStatus
 from jobify._internal.storage.base import (
     ScheduledJob,
     Storage,
     validate_table_name,
 )
+from psycopg_pool import AsyncConnectionPool
 from typing_extensions import override
 
-from jobify_db._internal._exceptions import (
+from jobify_db._internal.common.consts import DEFAULT_TABLE_NAME
+from jobify_db._internal.common.errors import (
     StorageConfigurationError,
     StorageNotInitializedError,
 )
-from jobify_db._internal._queries import (
-    CREATE_SCHEDULED_TABLE_QUERY,
+from jobify_db._internal.postgresql.psycopg.queries import (
     DELETE_SCHEDULE_MANY_QUERY,
     DELETE_SCHEDULE_QUERY,
     INSERT_SCHEDULE_QUERY,
+)
+from jobify_db._internal.postgresql.queries import (
+    CREATE_SCHEDULED_TABLE_QUERY,
     SELECT_SCHEDULES_QUERY,
 )
 
 
-class AsyncpgStorage(Storage):
+class PsycopgStorage(Storage):
     def __init__(
         self,
-        dsn: str | None = None,
+        conninfo: str | None = None,
         *,
-        pool: asyncpg.Pool | None = None,
-        table_name: str = "jobify_schedules",
+        pool: AsyncConnectionPool | None = None,
+        table_name: str = DEFAULT_TABLE_NAME,
         min_size: int = 1,
         max_size: int = 10,
     ) -> None:
-        if dsn is None and pool is None:
-            msg = "Either 'dsn' or 'pool' must be provided."
+        if conninfo is None and pool is None:
+            msg = "Either 'conninfo' or 'pool' must be provided."
             raise StorageConfigurationError(msg)
 
         validate_table_name(table_name)
 
-        self._dsn: Final[str | None] = dsn
-        self._pool: asyncpg.Pool | None = pool
+        self._conninfo: Final[str | None] = conninfo
+        self._pool: AsyncConnectionPool | None = pool
         self._owns_pool: bool = pool is None
         self._table_name: Final[str] = table_name
         self._min_size: Final[int] = min_size
@@ -65,7 +68,7 @@ class AsyncpgStorage(Storage):
         )
 
     @property
-    def pool(self) -> asyncpg.Pool:
+    def pool(self) -> AsyncConnectionPool:
         if self._pool is None:
             raise StorageNotInitializedError
         return self._pool
@@ -73,13 +76,18 @@ class AsyncpgStorage(Storage):
     @override
     async def startup(self) -> None:
         if self._pool is None:
-            self._pool = await asyncpg.create_pool(
-                dsn=self._dsn,
+            self._pool = AsyncConnectionPool(
+                conninfo=self._conninfo or "",
                 min_size=self._min_size,
                 max_size=self._max_size,
+                open=False,
             )
 
-        await self.pool.execute(self._create_query)
+        if self._pool.closed:
+            await self._pool.open()
+
+        async with self.pool.connection() as conn:
+            await conn.execute(self._create_query)
 
     @override
     async def shutdown(self) -> None:
@@ -89,38 +97,45 @@ class AsyncpgStorage(Storage):
 
     @override
     async def get_schedules(self) -> list[ScheduledJob]:
-        rows = await self.pool.fetch(self._select_query)
+        async with self.pool.connection() as conn:
+            cursor = await conn.execute(self._select_query)
+            rows = await cursor.fetchall()
+
         return [
             ScheduledJob(
-                job_id=row["job_id"],
-                name=row["name"],
-                message=bytes(row["message"]),
-                status=JobStatus(row["status"]),
-                next_run_at=row["next_run_at"].astimezone(self._tz),
+                job_id=row[0],
+                name=row[1],
+                message=bytes(row[2]),
+                status=JobStatus(row[3]),
+                next_run_at=row[4].astimezone(self._tz),
             )
             for row in rows
         ]
 
     @override
     async def add_schedule(self, *scheduled: ScheduledJob) -> None:
-        async with self.pool.acquire() as conn, conn.transaction():
+        async with self.pool.connection() as conn, conn.transaction():
             for sch in scheduled:
                 await conn.execute(
                     self._insert_query,
-                    sch.job_id,
-                    sch.name,
-                    sch.message,
-                    sch.status,
-                    sch.next_run_at,
+                    (
+                        sch.job_id,
+                        sch.name,
+                        sch.message,
+                        sch.status,
+                        sch.next_run_at,
+                    ),
                 )
 
     @override
     async def delete_schedule(self, job_id: str) -> None:
-        await self.pool.execute(self._delete_query, job_id)
+        async with self.pool.connection() as conn, conn.transaction():
+            await conn.execute(self._delete_query, (job_id,))
 
     @override
     async def delete_schedule_many(self, job_ids: Sequence[str]) -> None:
         if not job_ids:
             return
 
-        await self.pool.execute(self._delete_many_query, list(job_ids))
+        async with self.pool.connection() as conn, conn.transaction():
+            await conn.execute(self._delete_many_query, (list(job_ids),))
