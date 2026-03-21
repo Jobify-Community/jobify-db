@@ -27,7 +27,7 @@ async def weekly_report() -> None:
 
 async def main() -> None:
     async with app:
-        await asyncio.Event().wait()
+        await app.wait_all()
 
 
 if __name__ == "__main__":

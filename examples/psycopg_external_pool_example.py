@@ -29,7 +29,7 @@ async def main() -> None:
         print("Syncing data every 6 hours")
 
     async with app:
-        await asyncio.Event().wait()
+        await app.wait_all()
 
 
 if __name__ == "__main__":

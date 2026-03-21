@@ -32,7 +32,7 @@ async def main() -> None:
         print("Warming up cache every 30 minutes")
 
     async with app:
-        await asyncio.Event().wait()
+        await app.wait_all()
 
 
 if __name__ == "__main__":

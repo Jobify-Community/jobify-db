@@ -18,7 +18,6 @@ DSN = "postgresql://user:password@localhost:5432/mydb"
 
 async def main() -> None:
     pool = await asyncpg.create_pool(dsn=DSN, min_size=2, max_size=20)
-    assert pool is not None
 
     app = Jobify(storage=AsyncpgStorage(pool=pool))
 
@@ -27,7 +26,7 @@ async def main() -> None:
         print("Running nightly cleanup")
 
     async with app:
-        await asyncio.Event().wait()
+        await app.wait_all()
 
 
 if __name__ == "__main__":

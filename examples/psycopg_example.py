@@ -23,7 +23,7 @@ async def health_check() -> None:
 
 async def main() -> None:
     async with app:
-        await asyncio.Event().wait()
+        await app.wait_all()
 
 
 if __name__ == "__main__":
