@@ -18,7 +18,7 @@ from jobify_db.postgresql.asyncpg import AsyncpgStorage
 from jobify_db.postgresql.psycopg import PsycopgStorage
 
 
-class _MongoContainer(MongoDbContainer):
+class _MongoContainer(MongoDbContainer):  # type: ignore[misc]
     def _connect(self) -> None:
         wait_for_logs(
             self,
