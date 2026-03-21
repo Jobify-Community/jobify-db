@@ -39,7 +39,7 @@ class TestAiomysqlStorageStartup:
     async def test_startup_creates_pool_from_host(self) -> None:
         mock_pool = make_aiomysql_mock_pool()
         storage = AiomysqlStorage(
-            host="localhost", user="root", password="pass", db="testdb"
+            host="localhost", user="root", password="pass", db="testdb" # pragma: allowlist secret
         )
 
         with patch(
