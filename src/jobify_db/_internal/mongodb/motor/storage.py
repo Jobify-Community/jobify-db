@@ -8,7 +8,7 @@ from motor.motor_asyncio import (
     AsyncIOMotorClient,
     AsyncIOMotorCollection,
 )
-from pymongo import ReturnDocument
+from pymongo import UpdateOne
 from typing_extensions import override
 
 from jobify_db._internal.common.consts import (
@@ -101,8 +101,8 @@ class MotorStorage(Storage):
 
     @override
     async def add_schedule(self, *scheduled: ScheduledJob) -> None:
-        for sch in scheduled:
-            await self.collection.find_one_and_update(
+        operations = [
+            UpdateOne(
                 {"job_id": sch.job_id},
                 {
                     "$set": {
@@ -114,8 +114,10 @@ class MotorStorage(Storage):
                     "$setOnInsert": {"job_id": sch.job_id},
                 },
                 upsert=True,
-                return_document=ReturnDocument.AFTER,
             )
+            for sch in scheduled
+        ]
+        await self.collection.bulk_write(operations)
 
     @override
     async def delete_schedule(self, job_id: str) -> None:

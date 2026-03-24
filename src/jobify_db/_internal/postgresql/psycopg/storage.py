@@ -115,17 +115,20 @@ class PsycopgStorage(Storage):
     @override
     async def add_schedule(self, *scheduled: ScheduledJob) -> None:
         async with self.pool.connection() as conn, conn.transaction():
-            for sch in scheduled:
-                await conn.execute(
-                    self._insert_query,
+            cur = conn.cursor()
+            await cur.executemany(
+                self._insert_query,
+                [
                     (
                         sch.job_id,
                         sch.name,
                         sch.message,
                         sch.status,
                         sch.next_run_at,
-                    ),
-                )
+                    )
+                    for sch in scheduled
+                ],
+            )
 
     @override
     async def delete_schedule(self, job_id: str) -> None:

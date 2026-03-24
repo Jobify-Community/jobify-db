@@ -125,17 +125,19 @@ class AiomysqlStorage(Storage):
     async def add_schedule(self, *scheduled: ScheduledJob) -> None:
         async with self.pool.acquire() as conn:
             async with conn.cursor() as cur:
-                for sch in scheduled:
-                    await cur.execute(
-                        self._insert_query,
+                await cur.executemany(
+                    self._insert_query,
+                    [
                         (
                             sch.job_id,
                             sch.name,
                             sch.message,
                             sch.status,
                             sch.next_run_at,
-                        ),
-                    )
+                        )
+                        for sch in scheduled
+                    ],
+                )
             await conn.commit()
 
     @override
