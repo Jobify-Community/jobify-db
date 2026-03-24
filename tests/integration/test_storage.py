@@ -58,6 +58,34 @@ class TestAddAndGetSchedules:
         assert len(schedules) == 5
 
     @pytest.mark.asyncio()
+    async def test_get_returns_all_added(self, storage: Storage) -> None:
+        job_a = make_job(job_id="a", name="alpha")
+        job_b = make_job(job_id="b", name="beta")
+        await storage.add_schedule(job_a, job_b)
+
+        schedules = await storage.get_schedules()
+
+        assert len(schedules) == 2
+        by_id = {s.job_id: s for s in schedules}
+        assert by_id["a"].name == "alpha"
+        assert by_id["a"].message == b'{"key": "value"}'
+        assert by_id["a"].status == JobStatus.PENDING
+        assert by_id["b"].name == "beta"
+        assert by_id["b"].message == b'{"key": "value"}'
+        assert by_id["b"].status == JobStatus.PENDING
+
+    @pytest.mark.asyncio()
+    async def test_get_after_separate_adds(self, storage: Storage) -> None:
+        await storage.add_schedule(make_job(job_id="first"))
+        await storage.add_schedule(make_job(job_id="second"))
+
+        schedules = await storage.get_schedules()
+
+        assert len(schedules) == 2
+        ids = {s.job_id for s in schedules}
+        assert ids == {"first", "second"}
+
+    @pytest.mark.asyncio()
     async def test_upsert_updates_existing(self, storage: Storage) -> None:
         await storage.add_schedule(make_job(status=JobStatus.PENDING))
         await storage.add_schedule(make_job(status=JobStatus.RUNNING))
