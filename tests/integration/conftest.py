@@ -51,7 +51,7 @@ def postgres_dsn(postgres_container: PostgresContainer) -> str:
 # --- asyncpg fixtures ---
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture()
 async def asyncpg_storage(postgres_dsn: str) -> AsyncIterator[AsyncpgStorage]:
     s = AsyncpgStorage(dsn=postgres_dsn, table_name="jobify_asyncpg")
     await s.startup()
@@ -62,7 +62,7 @@ async def asyncpg_storage(postgres_dsn: str) -> AsyncIterator[AsyncpgStorage]:
         await s.shutdown()
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture()
 async def asyncpg_storage_from_pool(postgres_dsn: str) -> AsyncIterator[AsyncpgStorage]:
     pool = await asyncpg.create_pool(dsn=postgres_dsn, min_size=1, max_size=5)
     assert pool is not None
@@ -79,7 +79,7 @@ async def asyncpg_storage_from_pool(postgres_dsn: str) -> AsyncIterator[AsyncpgS
 # --- psycopg fixtures ---
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture()
 async def psycopg_storage(postgres_dsn: str) -> AsyncIterator[PsycopgStorage]:
     s = PsycopgStorage(conninfo=postgres_dsn, table_name="jobify_psycopg")
     await s.startup()
@@ -91,7 +91,7 @@ async def psycopg_storage(postgres_dsn: str) -> AsyncIterator[PsycopgStorage]:
         await s.shutdown()
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture()
 async def psycopg_storage_from_pool(postgres_dsn: str) -> AsyncIterator[PsycopgStorage]:
     pool = AsyncConnectionPool(conninfo=postgres_dsn, min_size=1, max_size=5, open=False)
     await pool.open()
@@ -120,7 +120,7 @@ def mongo_uri(mongo_container: MongoDbContainer) -> str:
     return str(mongo_container.get_connection_url())
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture()
 async def motor_storage(mongo_uri: str) -> AsyncIterator[MotorStorage]:
     s = MotorStorage(uri=mongo_uri, database_name="jobify_test")
     await s.startup()
@@ -131,7 +131,7 @@ async def motor_storage(mongo_uri: str) -> AsyncIterator[MotorStorage]:
         await s.shutdown()
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture()
 async def motor_storage_from_client(
     mongo_uri: str,
 ) -> AsyncIterator[MotorStorage]:
@@ -169,7 +169,7 @@ def mysql_config(
     }
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture()
 async def aiomysql_storage(
     mysql_config: dict[str, str | int],
 ) -> AsyncIterator[AiomysqlStorage]:
@@ -188,7 +188,7 @@ async def aiomysql_storage(
         await s.shutdown()
 
 
-@pytest_asyncio.fixture
+@pytest_asyncio.fixture()
 async def aiomysql_storage_from_pool(
     mysql_config: dict[str, str | int],
 ) -> AsyncIterator[AiomysqlStorage]:
