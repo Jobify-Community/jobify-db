@@ -27,7 +27,7 @@ from jobify_db._internal.mysql.queries import (
 
 
 class AiomysqlStorage(Storage):
-    def __init__(  # noqa: PLR0913
+    def __init__(  # ruff: ignore[too-many-arguments]
         self,
         host: str | None = None,
         port: int = 3306,
