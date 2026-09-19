@@ -46,7 +46,7 @@ dependencies = [
 asyncpg = ["asyncpg>=0.30"]
 psycopg = ["psycopg[binary]>=3.2", "psycopg_pool>=3.2"]
 motor = ["motor>=3.6"]
-aiomysql = ["aiomysql>=0.2"]
+aiomysql = ["aiomysql>=0.2", "PyMySQL<1.2"]
 
 [project.urls]
 Source = "https://github.com/Jobify-Community/jobify-db"

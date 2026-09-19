@@ -934,6 +934,7 @@ dependencies = [
 [package.optional-dependencies]
 aiomysql = [
     { name = "aiomysql" },
+    { name = "pymysql" },
 ]
 asyncpg = [
     { name = "asyncpg" },
@@ -985,6 +986,7 @@ requires-dist = [
     { name = "motor", marker = "extra == 'motor'", specifier = ">=3.6" },
     { name = "psycopg", extras = ["binary"], marker = "extra == 'psycopg'", specifier = ">=3.2" },
     { name = "psycopg-pool", marker = "extra == 'psycopg'", specifier = ">=3.2" },
+    { name = "pymysql", marker = "extra == 'aiomysql'", specifier = "<1.2" },
 ]
 provides-extras = ["aiomysql", "asyncpg", "motor", "psycopg"]
 
